@@ -1,0 +1,27 @@
+DESTDIR ?= 
+APPNAME = xdg-desktop-portal-shim
+
+all: build/$(APPNAME) build/org.freedesktop.portal.Desktop.service
+
+build/$(APPNAME): src/*.vala
+	mkdir -p build
+	valac -v --target-glib=2.42 --pkg gtk+-3.0 -d build --save-temps -o $(APPNAME) $^
+
+build/org.freedesktop.portal.Desktop.service: src/org.freedesktop.portal.Desktop.service
+	mkdir -p build
+	sed -e "s#@PREFIX@#$(PREFIX)#g" $< > $@
+
+.PHONY: clean
+clean:
+	rm -rf build
+
+install: all
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	install -t $(DESTDIR)$(PREFIX)/bin build/$(APPNAME)
+	mkdir -p $(DESTDIR)$(PREFIX)/share/dbus-1/services
+	cp -t $(DESTDIR)$(PREFIX)/share/dbus-1/services build/org.freedesktop.portal.Desktop.service
+
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/$(APPNAME)
+	rm -f $(DESTDIR)$(PREFIX)/share/dbus-1/services/org.freedesktop.portal.Desktop.service
+

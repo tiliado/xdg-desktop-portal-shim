@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+import sys
+prefix = "/usr/local"
+
+for arg in sys.argv[1:]:
+    try:
+        name, value = arg.split("=", 1)
+    except ValueError:
+        name, value = arg, None
+    if name == "--libdir":
+        pass
+    elif name == "--prefix":
+        prefix = value
+    elif name in ("CFLAGS", "CXXFLAGS"):
+        pass
+    else:
+        print("Warning: Unknown option: ", arg)
+
+with open("Makefile", "wt", encoding="utf-8") as f:
+    f.write('PREFIX = %s\n' % prefix)
+    with open("Makefile.in", "rt", encoding="utf-8") as f_in:
+        f.write(f_in.read())
