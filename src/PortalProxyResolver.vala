@@ -25,32 +25,20 @@
 namespace Tiliado
 {
 
-PortalOpenUri? portal_open_uri = null;
-PortalProxyResolver? portal_proxy_resolver = null;
-
-void main(string[] args)
+[DBus (name = "org.freedesktop.portal.ProxyResolver")]
+public class PortalProxyResolver : GLib.Object
 {
-    Gtk.init(ref args);
-    Bus.own_name(BusType.SESSION, "org.freedesktop.portal.Desktop", BusNameOwnerFlags.NONE,
-        on_bus_aquired,
-        () => {},
-        () => error("Could not acquire name\n"));
-    Gtk.main();
-}
-
-void on_bus_aquired(DBusConnection conn)
-{
-    portal_open_uri = new PortalOpenUri(conn);
-    portal_proxy_resolver = new PortalProxyResolver();
-    try
+    GLib.ProxyResolver resolver;
+    
+    public PortalProxyResolver()
     {
-        conn.register_object("/org/freedesktop/portal/desktop", portal_open_uri);
-        conn.register_object("/org/freedesktop/portal/desktop", portal_proxy_resolver);
+        this.resolver = ProxyResolver.get_default();
     }
-    catch (GLib.IOError e)
+    
+    public void Lookup(string uri, out string[] proxies) throws GLib.Error
     {
-        error("Could not register service\n");
+        proxies = resolver.lookup(uri, null);
     }
 }
 
-} //namespace Tiliado
+} // namespace Tiliado
